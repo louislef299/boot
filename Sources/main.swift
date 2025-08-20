@@ -1,11 +1,23 @@
 import ArgumentParser
+import Foundation
 
-@main
-struct Boot: ParsableCommand {
-  @Option(help: "Specify the input")
-  public var input: String
+struct BootOptions: ParsableCommand {
+  @Flag(help: "Boot the object to the remote")
+  var remote = false
+}
 
-  public func run() throws {
-    print(self.input)
-  }
+let options = BootOptions.parseOrExit()
+
+let fileManager = FileManager.default
+let currentDirectoryPath = fileManager.currentDirectoryPath
+print("Current directory: \(currentDirectoryPath)")
+
+do {
+    let contents = try fileManager.contentsOfDirectory(atPath: currentDirectoryPath)
+    print("Contents of the current directory:")
+    for item in contents {
+        print("- \(item)")
+    }
+} catch {
+    print("Error listing directory contents: \(error)")
 }
