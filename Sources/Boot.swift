@@ -59,6 +59,12 @@ extension Boot {
       let fileManager = FileManager.default
       do {
         let contents = try fileManager.contentsOfDirectory(atPath: Boot.bootDir.path)
+
+        if contents.isEmpty {
+            print("No files in boot directory")
+            return
+        }
+        
         for file in contents {
           print("- \(file)")
         }
