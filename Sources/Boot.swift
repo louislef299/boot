@@ -16,7 +16,8 @@ extension Boot {
   struct Move: ParsableCommand {
     static let configuration = CommandConfiguration(
       commandName: "move",
-      abstract: "Move a file to the boot directory"
+      abstract: "Move a file to the boot directory",
+      aliases: ["mv"]
     )
     
     @Argument(
@@ -49,7 +50,8 @@ extension Boot {
   
   struct List: ParsableCommand {
     static let configuration = CommandConfiguration(
-      abstract: "List files in the boot directory"
+      abstract: "List files in the boot directory",
+      aliases: ["ls"]
     )
     
     mutating func run() {
