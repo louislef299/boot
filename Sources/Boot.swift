@@ -4,33 +4,65 @@ import Foundation
 @main
 struct Boot: ParsableCommand {
   static let configuration = CommandConfiguration(
-    abstract: "Boot your files!")
-
-  @Argument(
-    help: "File to be parsed.",
-    transform: URL.init(fileURLWithPath:)
+    abstract: "Boot your files!",
+    subcommands: [Move.self, List.self],
+    defaultSubcommand: Move.self
   )
-  var file: URL
+  
+  static let bootDir = URL(fileURLWithPath: "./.vscode")
+}
 
-  mutating func run() throws {
-    print("\nReceived file \(file)\n")
-    let destinationDirectory = URL(fileURLWithPath: "./.vscode")
-    let fileManager = FileManager.default
-
-    // Create destination directory if it doesn't exist
-    if !fileManager.fileExists(atPath: destinationDirectory.path) {
-        try? fileManager.createDirectory(at: destinationDirectory, withIntermediateDirectories: true)
+extension Boot {
+  struct Move: ParsableCommand {
+    static let configuration = CommandConfiguration(
+      commandName: "move",
+      abstract: "Move a file to the boot directory"
+    )
+    
+    @Argument(
+      help: "File to be parsed.",
+      transform: URL.init(fileURLWithPath:)
+    )
+    var file: URL
+    
+    mutating func run() throws {
+      print("\nReceived file \(file)\n")
+      let fileManager = FileManager.default
+      
+      // Create destination directory if it doesn't exist
+      if !fileManager.fileExists(atPath: Boot.bootDir.path) {
+          try? fileManager.createDirectory(at: Boot.bootDir, withIntermediateDirectories: true)
+      }
+      
+      // Set up destination file path
+      let destinationFilePath = Boot.bootDir.appendingPathComponent(file.lastPathComponent)
+      
+      // Move the file
+      do {
+          try fileManager.moveItem(at: file, to: destinationFilePath)
+          print("Successfully moved file to \(destinationFilePath.path)")
+      } catch {
+          print("Error moving file: \(error)")
+      }
     }
-
-    // Set up destination file path
-    let destinationFilePath = destinationDirectory.appendingPathComponent(file.lastPathComponent)
-
-    // Move the file
-    do {
-        try fileManager.moveItem(at: file, to: destinationFilePath)
-        print("Successfully moved file to \(destinationFilePath.path)")
-    } catch {
-        print("Error moving file: \(error)")
+  }
+  
+  struct List: ParsableCommand {
+    static let configuration = CommandConfiguration(
+      abstract: "List files in the boot directory"
+    )
+    
+    mutating func run() {
+      print("Files found in boot directory \(Boot.bootDir.path)")
+      let fileManager = FileManager.default
+      do {
+        let contents = try fileManager.contentsOfDirectory(atPath: Boot.bootDir.path)
+        for file in contents {
+          print("- \(file)")
+        }
+      } catch {
+        print("Error listing directory: \(error)")
+      }
     }
   }
 }
