@@ -99,25 +99,39 @@ extension Boot {
     )
 
     @Argument(
-      help: "File to be received.",
-      transform: URL.init(fileURLWithPath:)
+      help: "File to be received."
     )
-    var file: URL
+    var file: String
 
     mutating func run() {
       let fileManager = FileManager.default
       Boot.validateDir(Boot.bootDir, fileManager: fileManager)
 
+      let fileURL = Boot.bootDir.appendingPathComponent(file)
       do {
         let contents = try Boot.getBootFiles(Boot.bootDir, fileManager: fileManager)
         for f in contents {
+
           // found file in boot, bring it back
-          if f == file.relativeString {
-            print("found a match!")
+          if f == file {
+            do {
+                let destinationURL = URL(fileURLWithPath: fileManager.currentDirectoryPath).appendingPathComponent(file)
+                if fileManager.fileExists(atPath: destinationURL.path) {
+                    fatalError("A file with the same name already exists at destination")
+                }
+
+                try fileManager.moveItem(
+                  at: fileURL, 
+                  to: destinationURL
+                )
+                print("Successfully recovered file \(file)")
+            } catch {
+                print("Error moving file: \(error)")
+            }
             return
           }
         }
-        print("no match found for \(file.relativeString)")
+        print("no match found for \(file)")
       } catch BootError.NoBootFiles(path: Boot.bootDir.path) {
         print("No files found in boot!")
       } catch {
