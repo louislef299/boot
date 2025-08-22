@@ -1,11 +1,19 @@
 import ArgumentParser
 import Foundation
 
+enum BootError: Error {
+  case NoBootFiles(path: String)
+}
+
 @main
 struct Boot: ParsableCommand {
   static let configuration = CommandConfiguration(
     abstract: "Boot your files!",
-    subcommands: [Move.self, List.self],
+    subcommands: [
+      Move.self, 
+      List.self, 
+      Receive.self,
+    ],
     defaultSubcommand: Move.self
   )
   
@@ -21,6 +29,14 @@ struct Boot: ParsableCommand {
         }
     }
   }
+
+  static func getBootFiles(_ dir: URL, fileManager: FileManager) throws -> [String] {
+    let contents = try fileManager.contentsOfDirectory(atPath: Boot.bootDir.path)
+    if contents.isEmpty {
+      throw BootError.NoBootFiles(path: dir.path)
+    }
+    return contents
+  }
 }
 
 extension Boot {
@@ -32,7 +48,7 @@ extension Boot {
     )
     
     @Argument(
-      help: "File to be parsed.",
+      help: "File to boot.",
       transform: URL.init(fileURLWithPath:)
     )
     var file: URL
@@ -42,10 +58,7 @@ extension Boot {
       let fileManager = FileManager.default
       Boot.validateDir(Boot.bootDir, fileManager: fileManager)
       
-      // Set up destination file path
       let destinationFilePath = Boot.bootDir.appendingPathComponent(file.lastPathComponent)
-      
-      // Move the file
       do {
           try fileManager.moveItem(at: file, to: destinationFilePath)
           print("Successfully moved file to \(destinationFilePath.path)")
@@ -62,23 +75,53 @@ extension Boot {
     )
     
     mutating func run() {
-      print("Files found in boot directory \(Boot.bootDir.path)")
       let fileManager = FileManager.default
       Boot.validateDir(Boot.bootDir, fileManager: fileManager)
 
       do {
-        let contents = try fileManager.contentsOfDirectory(atPath: Boot.bootDir.path)
-
-        if contents.isEmpty {
-            print("No files in boot directory")
-            return
+        let contents = try Boot.getBootFiles(Boot.bootDir, fileManager: fileManager)
+        print("Files found in boot directory \(Boot.bootDir.path):")
+        for f in contents {
+          print("- \(f)")
         }
-        
-        for file in contents {
-          print("- \(file)")
-        }
+      } catch BootError.NoBootFiles(path: Boot.bootDir.path) {
+        print("No files found in boot!")
       } catch {
-        print("Error listing directory: \(error)")
+        fatalError("Unknown error \(error)")
+      }
+    }
+  }
+
+  struct Receive: ParsableCommand {
+    static let configuration = CommandConfiguration(
+      abstract: "Receive files from the boot directory",
+      aliases: ["rec"]
+    )
+
+    @Argument(
+      help: "File to be received.",
+      transform: URL.init(fileURLWithPath:)
+    )
+    var file: URL
+
+    mutating func run() {
+      let fileManager = FileManager.default
+      Boot.validateDir(Boot.bootDir, fileManager: fileManager)
+
+      do {
+        let contents = try Boot.getBootFiles(Boot.bootDir, fileManager: fileManager)
+        for f in contents {
+          // found file in boot, bring it back
+          if f == file.relativeString {
+            print("found a match!")
+            return
+          }
+        }
+        print("no match found for \(file.relativeString)")
+      } catch BootError.NoBootFiles(path: Boot.bootDir.path) {
+        print("No files found in boot!")
+      } catch {
+        fatalError("Unknown error \(error)")
       }
     }
   }
