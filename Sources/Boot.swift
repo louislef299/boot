@@ -9,7 +9,18 @@ struct Boot: ParsableCommand {
     defaultSubcommand: Move.self
   )
   
-  static let bootDir = URL(fileURLWithPath: "./.vscode")
+  static let bootDir = URL(fileURLWithPath: "./.boot")
+
+  // Validate directory exists and create directory if it doesn't exist
+  static func validateDir(_ dir: URL, fileManager: FileManager) {
+    if !fileManager.fileExists(atPath: dir.path) {
+        do {
+          try fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
+        } catch {
+          fatalError("Failed to create directory \(dir.path): \(error)")
+        }
+    }
+  }
 }
 
 extension Boot {
@@ -29,11 +40,7 @@ extension Boot {
     mutating func run() throws {
       print("\nReceived file \(file)\n")
       let fileManager = FileManager.default
-      
-      // Create destination directory if it doesn't exist
-      if !fileManager.fileExists(atPath: Boot.bootDir.path) {
-          try? fileManager.createDirectory(at: Boot.bootDir, withIntermediateDirectories: true)
-      }
+      Boot.validateDir(Boot.bootDir, fileManager: fileManager)
       
       // Set up destination file path
       let destinationFilePath = Boot.bootDir.appendingPathComponent(file.lastPathComponent)
@@ -57,6 +64,8 @@ extension Boot {
     mutating func run() {
       print("Files found in boot directory \(Boot.bootDir.path)")
       let fileManager = FileManager.default
+      Boot.validateDir(Boot.bootDir, fileManager: fileManager)
+
       do {
         let contents = try fileManager.contentsOfDirectory(atPath: Boot.bootDir.path)
 
