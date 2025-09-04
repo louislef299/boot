@@ -14,7 +14,7 @@ test:
 
 # Run the application (optionally with ARGS)
 run:
-	swift run $(ARGS)
+	swift run $(PRODUCT_NAME) --input $(ARGS)
 
 install: build
 	mkdir -p $(BINDIR)
