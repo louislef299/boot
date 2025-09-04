@@ -61,5 +61,7 @@ fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
 
+tmp_install_test
+
 .vscode
 .boot
