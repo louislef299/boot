@@ -10,7 +10,7 @@ final class ReceiveCommandTests: XCTestCase {
         super.setUp()
         mockFileManager = MockFileManager()
         receiveCommand = Boot.Receive()
-        receiveCommand.file = "test-file.txt"
+        receiveCommand.files = ["test-file.txt"]
     }
     
     override func tearDown() {
@@ -57,9 +57,51 @@ final class ReceiveCommandTests: XCTestCase {
         XCTAssertTrue(mockFileManager.moveItemCalled, "File should be moved from boot directory")
     }
     
+    func testRun_MultipleFilesFound_MovesAllMatchingFiles() throws {
+        // Setup
+        mockFileManager.fileExists = false // Files don't exist at destination
+        mockFileManager.listContents = ["test-file1.txt", "test-file2.txt", "other-file.txt"]
+        receiveCommand.files = ["test-file1.txt", "test-file2.txt"]
+        
+        // Test first file
+        let sourceURL1 = Boot.bootDir.appendingPathComponent("test-file1.txt")
+        let destinationURL1 = URL(fileURLWithPath: mockFileManager.currentDirectoryPath).appendingPathComponent("test-file1.txt")
+        
+        try mockFileManager.moveItem(at: sourceURL1, to: destinationURL1)
+        XCTAssertTrue(mockFileManager.moveItemCalled, "First file should be moved from boot directory")
+        
+        // Reset mock for second file
+        mockFileManager.moveItemCalled = false
+        
+        // Test second file
+        let sourceURL2 = Boot.bootDir.appendingPathComponent("test-file2.txt")
+        let destinationURL2 = URL(fileURLWithPath: mockFileManager.currentDirectoryPath).appendingPathComponent("test-file2.txt")
+        
+        try mockFileManager.moveItem(at: sourceURL2, to: destinationURL2)
+        XCTAssertTrue(mockFileManager.moveItemCalled, "Second file should be moved from boot directory")
+    }
+    
+    func testRun_AllParameter_MovesAllFiles() throws {
+        // Setup
+        mockFileManager.fileExists = false // Files don't exist at destination
+        mockFileManager.listContents = ["file1.txt", "file2.txt", "file3.txt"]
+        receiveCommand.files = ["all"]
+        
+        // Test that all files would be moved
+        for file in mockFileManager.listContents {
+            let sourceURL = Boot.bootDir.appendingPathComponent(file)
+            let destinationURL = URL(fileURLWithPath: mockFileManager.currentDirectoryPath).appendingPathComponent(file)
+            
+            mockFileManager.moveItemCalled = false
+            try mockFileManager.moveItem(at: sourceURL, to: destinationURL)
+            XCTAssertTrue(mockFileManager.moveItemCalled, "\(file) should be moved from boot directory")
+        }
+    }
+    
     func testRun_FileNotFound_PrintsMessage() throws {
         // Setup
         mockFileManager.listContents = ["other-file.txt"]
+        receiveCommand.files = ["test-file.txt"]
         
         // Test that the file is not in the list
         let files = try Boot.getBootFiles(Boot.bootDir, fileManager: mockFileManager)
@@ -73,9 +115,10 @@ final class ReceiveCommandTests: XCTestCase {
         // Setup
         mockFileManager.fileExists = true // File exists at destination
         mockFileManager.listContents = ["test-file.txt"]
+        receiveCommand.files = ["test-file.txt"]
         
         // Execute and Assert
-        checkFatalErrorCondition(in: "Receive.run") {
+        checkFatalErrorCondition(in: "moveFileFromBoot") {
             // Check if the condition that would lead to a fatal error exists
             return mockFileManager.fileExists && mockFileManager.listContents.contains("test-file.txt")
         }

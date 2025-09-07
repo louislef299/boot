@@ -10,7 +10,7 @@ final class MoveCommandTests: XCTestCase {
         super.setUp()
         mockFileManager = MockFileManager()
         moveCommand = Boot.Move()
-        moveCommand.file = URL(fileURLWithPath: "/test/source.txt")
+        moveCommand.files = [URL(fileURLWithPath: "/test/source.txt")]
     }
     
     override func tearDown() {
@@ -55,6 +55,32 @@ final class MoveCommandTests: XCTestCase {
         
         // Assert
         XCTAssertTrue(mockFileManager.moveItemCalled, "File should be moved to boot directory")
+    }
+    
+    func testRun_MovesMultipleFilesToBootDirectory() throws {
+        // Setup
+        mockFileManager.fileExists = true
+        moveCommand.files = [
+            URL(fileURLWithPath: "/test/source1.txt"),
+            URL(fileURLWithPath: "/test/source2.txt")
+        ]
+        
+        // Test first file
+        let sourceURL1 = URL(fileURLWithPath: "/test/source1.txt")
+        let destinationURL1 = Boot.bootDir.appendingPathComponent("source1.txt")
+        
+        try mockFileManager.moveItem(at: sourceURL1, to: destinationURL1)
+        XCTAssertTrue(mockFileManager.moveItemCalled, "First file should be moved to boot directory")
+        
+        // Reset the mock for the second file
+        mockFileManager.moveItemCalled = false
+        
+        // Test second file
+        let sourceURL2 = URL(fileURLWithPath: "/test/source2.txt")
+        let destinationURL2 = Boot.bootDir.appendingPathComponent("source2.txt")
+        
+        try mockFileManager.moveItem(at: sourceURL2, to: destinationURL2)
+        XCTAssertTrue(mockFileManager.moveItemCalled, "Second file should be moved to boot directory")
     }
     
     func testRun_MoveFileFails_HandlesError() throws {

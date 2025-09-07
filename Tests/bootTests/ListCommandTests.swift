@@ -77,6 +77,6 @@ final class ListCommandTests: XCTestCase {
             XCTAssertEqual((error as NSError).code, 4)
         }
     }
-    }
     
     // Use shared MockFileManager from TestHelpers.swift
+}

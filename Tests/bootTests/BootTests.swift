@@ -63,7 +63,7 @@ final class BootTests: XCTestCase {
         mockFileManager.listContents = expectedFiles
         
         // Execute
-        let result = try Boot.getBootFiles(testDirectoryURL, fileManager: mockFileManager)
+        let result = try Boot.getBootFiles(Boot.bootDir, fileManager: mockFileManager)
         
         // Assert
         XCTAssertEqual(result, expectedFiles)
@@ -74,12 +74,12 @@ final class BootTests: XCTestCase {
         mockFileManager.listContents = []
         
         // Execute and Assert
-        XCTAssertThrowsError(try Boot.getBootFiles(testDirectoryURL, fileManager: mockFileManager)) { error in
+        XCTAssertThrowsError(try Boot.getBootFiles(Boot.bootDir, fileManager: mockFileManager)) { error in
             guard case BootError.NoBootFiles(let path) = error else {
                 XCTFail("Expected NoBootFiles error, got \(error)")
                 return
             }
-            XCTAssertEqual(path, testDirectoryURL.path)
+            XCTAssertEqual(path, Boot.bootDir.path)
         }
     }
     
@@ -89,7 +89,7 @@ final class BootTests: XCTestCase {
         mockFileManager.listContentsError = expectedError
         
         // Execute and Assert
-        XCTAssertThrowsError(try Boot.getBootFiles(testDirectoryURL, fileManager: mockFileManager)) { error in
+        XCTAssertThrowsError(try Boot.getBootFiles(Boot.bootDir, fileManager: mockFileManager)) { error in
             XCTAssertEqual((error as NSError).domain, "test")
             XCTAssertEqual((error as NSError).code, 2)
         }
