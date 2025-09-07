@@ -17,7 +17,8 @@ struct Boot: ParsableCommand {
     defaultSubcommand: Move.self
   )
   
-  static let bootDir = URL(fileURLWithPath: "./.boot")
+  static let homeDirURL = FileManager.default.homeDirectoryForCurrentUser
+  static let bootDir = URL(fileURLWithPath: "\(homeDirURL.path)/.boot")
 
   // Validate directory exists and create directory if it doesn't exist
   static func validateDir(_ dir: URL, fileManager: FileManager) {
