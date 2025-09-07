@@ -19,7 +19,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v3
-    - uses: swift-actions/setup-swift@v2
+    # https://github.com/swift-actions/setup-swift/pull/710
+    - uses: swift-actions/setup-swift@next
     - name: Print Swift Version
       run: swift --version
     - name: Test
