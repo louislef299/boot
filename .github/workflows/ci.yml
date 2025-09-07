@@ -25,7 +25,7 @@ jobs:
     - name: Test
       run: swift test
     - name: Build
-      run: swift build -v
+      run: swift build -v --show-bin-path
     - name: Upload Executable to GitHub Release
       if: startsWith(github.ref, 'refs/tags/')
       env:
@@ -34,3 +34,17 @@ jobs:
         git show "${{ github.ref_name }}" --no-patch
         mv ./.build/release/boot boot-${{ github.ref_name }}-${{ matrix.os }}
         gh release upload ${{ github.ref_name }} boot-${{ github.ref_name }}-${{ matrix.os }}
+
+  release:
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+    - name: Create GitHub Release
+      if: startsWith(github.ref, 'refs/tags/')
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git show "${{ github.ref_name }}" --no-patch
+        gh release create "${{ github.ref_name }}" \
+          --title "${{ github.ref_name }}" \
+          --notes-from-tag --verify-tag
