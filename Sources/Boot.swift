@@ -108,31 +108,23 @@ extension Boot {
       let fileManager = FileManager.default
       Boot.validateDir(Boot.bootDir, fileManager: fileManager)
 
-      let fileURL = Boot.bootDir.appendingPathComponent(file)
+      let single = (file != "all")
       do {
         let contents = try Boot.getBootFiles(Boot.bootDir, fileManager: fileManager)
         for f in contents {
-
-          // found file in boot, bring it back
-          if f == file {
+          if f == file || !single {
+            // found file in boot, bring it back
             do {
-                let destinationURL = URL(fileURLWithPath: fileManager.currentDirectoryPath).appendingPathComponent(file)
-                if fileManager.fileExists(atPath: destinationURL.path) {
-                    fatalError("A file with the name \(file) already exists at destination")
-                }
-
-                try fileManager.moveItem(
-                  at: fileURL, 
-                  to: destinationURL
-                )
-                print("recovered \(file)")
+              try moveFileFromBoot(fileManager: fileManager, file: f)
             } catch {
-                print("Error moving file: \(error)")
+              print("Error moving file: \(error)")
             }
-            return
+            if single {
+              return
+            }
           }
         }
-        print("no match found for \(file)")
+        if single { print("no match found for \(file)") }
       } catch BootError.NoBootFiles(path: Boot.bootDir.path) {
         print("No files found in boot!")
       } catch {
@@ -140,4 +132,17 @@ extension Boot {
       }
     }
   }
+}
+
+func moveFileFromBoot(fileManager: FileManager, file: String) throws {
+  let destinationURL = URL(fileURLWithPath: fileManager.currentDirectoryPath).appendingPathComponent(file)
+  if fileManager.fileExists(atPath: destinationURL.path) {
+      fatalError("A file with the name \(file) already exists at destination")
+  }
+
+  try fileManager.moveItem(
+    at: Boot.bootDir.appendingPathComponent(file), 
+    to: destinationURL
+  )
+  print("recovered \(file)")
 }
