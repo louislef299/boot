@@ -104,29 +104,28 @@ extension Boot {
     @Argument(
       help: "File to be received."
     )
-    var file: String
+    var files: [String]
 
     mutating func run() {
       let fileManager = FileManager.default
       Boot.validateDir(Boot.bootDir, fileManager: fileManager)
 
-      let single = (file != "all")
+      let all = files.contains("all")
+      var moveCount = 0
       do {
         let contents = try Boot.getBootFiles(Boot.bootDir, fileManager: fileManager)
         for f in contents {
-          if f == file || !single {
+          if files.contains(f) || all {
             // found file in boot, bring it back
             do {
               try moveFileFromBoot(fileManager: fileManager, file: f)
+              moveCount += 1
             } catch {
               print("Error moving file: \(error)")
             }
-            if single {
-              return
-            }
           }
         }
-        if single { print("no match found for \(file)") }
+        if moveCount == 0 { print("no match(s) found for \(files)") }
       } catch BootError.NoBootFiles(path: Boot.bootDir.path) {
         print("No files found in boot!")
       } catch {
