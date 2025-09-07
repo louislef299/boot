@@ -26,14 +26,14 @@ jobs:
     - name: Test
       run: swift test
     - name: Build
-      run: swift build -v --show-bin-path
+      run: swift build -v -c release
     - name: Upload Executable to GitHub Release
       if: startsWith(github.ref, 'refs/tags/')
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git show "${{ github.ref_name }}" --no-patch
-        mv ./.build/release/boot boot-${{ github.ref_name }}-${{ matrix.os }}
+        mv $(swift build --show-bin-path) boot-${{ github.ref_name }}-${{ matrix.os }}
         gh release upload ${{ github.ref_name }} boot-${{ github.ref_name }}-${{ matrix.os }}
 
   release:

@@ -4,7 +4,7 @@
 PRODUCT_NAME = boot
 PREFIX ?= /usr/local
 BINDIR = $(PREFIX)/bin
-BUILD_FLAGS = --configuration release
+BUILD_FLAGS = -c release
 
 build:
 	swift build $(BUILD_FLAGS)
