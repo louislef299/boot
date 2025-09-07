@@ -53,18 +53,20 @@ extension Boot {
       help: "File to boot.",
       transform: URL.init(fileURLWithPath:)
     )
-    var file: URL
+    var files: [URL]
     
     mutating func run() throws {
       let fileManager = FileManager.default
       Boot.validateDir(Boot.bootDir, fileManager: fileManager)
       
-      let destinationFilePath = Boot.bootDir.appendingPathComponent(file.lastPathComponent)
-      do {
-          try fileManager.moveItem(at: file, to: destinationFilePath)
-          print("booted \(file.relativeString)")
-      } catch {
-          print("Error moving file: \(error)")
+      for file in files {
+        let destinationFilePath = Boot.bootDir.appendingPathComponent(file.lastPathComponent)
+        do {
+            try fileManager.moveItem(at: file, to: destinationFilePath)
+            print("booted \(file.relativeString)")
+        } catch {
+            print("Error moving file: \(error)")
+        }
       }
     }
   }
