@@ -21,7 +21,7 @@ struct Boot: ParsableCommand {
   static let homeDirURL = FileManager.default.homeDirectoryForCurrentUser
   static let bootDir = URL(fileURLWithPath: "\(homeDirURL.path)/.boot")
 
-  // Validate directory exists and create directory if it doesn't exist
+  // Validate boot directory exists and create directory if it doesn't exist
   static func validateDir(_ dir: URL, fileManager: FileManager) {
     if !fileManager.fileExists(atPath: dir.path) {
         do {
@@ -56,14 +56,13 @@ extension Boot {
     var file: URL
     
     mutating func run() throws {
-      print("\nReceived file \(file)\n")
       let fileManager = FileManager.default
       Boot.validateDir(Boot.bootDir, fileManager: fileManager)
       
       let destinationFilePath = Boot.bootDir.appendingPathComponent(file.lastPathComponent)
       do {
           try fileManager.moveItem(at: file, to: destinationFilePath)
-          print("Successfully moved file to \(destinationFilePath.path)")
+          print("booted \(file.relativeString)")
       } catch {
           print("Error moving file: \(error)")
       }
@@ -82,7 +81,7 @@ extension Boot {
 
       do {
         let contents = try Boot.getBootFiles(Boot.bootDir, fileManager: fileManager)
-        print("Files found in boot directory \(Boot.bootDir.path):")
+        print("boot directory contents(\(Boot.bootDir.path)):")
         for f in contents {
           print("- \(f)")
         }
@@ -119,14 +118,14 @@ extension Boot {
             do {
                 let destinationURL = URL(fileURLWithPath: fileManager.currentDirectoryPath).appendingPathComponent(file)
                 if fileManager.fileExists(atPath: destinationURL.path) {
-                    fatalError("A file with the same name already exists at destination")
+                    fatalError("A file with the name \(file) already exists at destination")
                 }
 
                 try fileManager.moveItem(
                   at: fileURL, 
                   to: destinationURL
                 )
-                print("Successfully recovered file \(file)")
+                print("recovered \(file)")
             } catch {
                 print("Error moving file: \(error)")
             }
