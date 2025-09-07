@@ -9,12 +9,13 @@ enum BootError: Error {
 struct Boot: ParsableCommand {
   static let configuration = CommandConfiguration(
     abstract: "Boot your files!",
+    version: "v0.0.1",
     subcommands: [
       Move.self, 
       List.self, 
       Receive.self,
     ],
-    defaultSubcommand: Move.self
+    defaultSubcommand: Move.self,
   )
   
   static let homeDirURL = FileManager.default.homeDirectoryForCurrentUser
