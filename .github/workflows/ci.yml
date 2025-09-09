@@ -15,7 +15,8 @@ jobs:
   ci:
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest]
+        # can reenable ubuntu-latest once the setup-swift task is more mature
+        os: [macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v3
