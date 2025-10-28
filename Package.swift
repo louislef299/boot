@@ -16,7 +16,7 @@ let package = Package(
             dependencies: [
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ],
-            path: "Sources"),
+            path: "Sources/App/CLI"),
         .testTarget(
             name: "bootTests",
             dependencies: ["boot"],
