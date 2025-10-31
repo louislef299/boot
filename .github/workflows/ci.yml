@@ -25,11 +25,14 @@ jobs:
     - name: Print Swift Version
       run: swift --version
     - name: Test
+      working-directory: cli
       run: swift test
     - name: Build
+      working-directory: cli
       run: swift build -v -c release
     - name: Upload Executable to GitHub Release
       if: startsWith(github.ref, 'refs/tags/')
+      working-directory: cli
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
