@@ -19,7 +19,7 @@ struct ContentView: View {
                 Text("Boot🥾")
                     .font(.title)
                     .fontWeight(.bold)
-                    .padding(.bottom)
+                    .padding()
             }
             .padding(.leading)
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -53,20 +53,26 @@ struct ContentView: View {
                        print(error)
                    }
                }
-                
-                Spacer()
-                
-                // this will be where we will put all the boot files
-                Text("Files currently in Boot:")
-                    .font(.title2)
-                    .padding(.bottom)
-                ScrollView {
-                    VStack {
-                        ForEach(objects) {
-                            Text($0.name)
+                                
+                if objects.isEmpty {
+                    Text("No files in Boot!")
+                        .font(.title2)
+                        .padding(.bottom)
+                } else {
+                    // this will be where we will put all the boot files
+                    Text("Files currently in Boot:")
+                        .font(.title2)
+                        .padding(.bottom)
+                    ScrollView {
+                        VStack {
+                            ForEach(objects) {
+                                Text($0.name)
+                            }
                         }
                     }
                 }
+                
+                Spacer()
             }
             .padding()
         }
