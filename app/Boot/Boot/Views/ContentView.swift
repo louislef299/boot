@@ -33,7 +33,7 @@ struct ContentView: View {
                 .padding()
                 .fileImporter(
                    isPresented: $showFileImporter,
-                   allowedContentTypes: [.pdf],
+                   allowedContentTypes: [.item],
                    allowsMultipleSelection: true
                ) { result in
                    switch result {
