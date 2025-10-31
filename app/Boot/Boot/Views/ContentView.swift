@@ -6,10 +6,12 @@
 //
 
 import SwiftUI
+internal import UniformTypeIdentifiers
 
 struct ContentView: View {
     @State private var objects: [Object] = []
     @State private var count = 0
+    @State private var showFileImporter = false
     
     var body: some View {
         NavigationStack {
@@ -24,12 +26,33 @@ struct ContentView: View {
             
             VStack {
                 Button("Boot!") {
-                    objects.append(Object(name: "boot\(count)"))
-                    count = count + 1
+                    showFileImporter = true
                 }
                 .buttonStyle(.borderedProminent)
                 .font(.title2)
                 .padding()
+                .fileImporter(
+                   isPresented: $showFileImporter,
+                   allowedContentTypes: [.pdf],
+                   allowsMultipleSelection: true
+               ) { result in
+                   switch result {
+                   case .success(let files):
+                       files.forEach { file in
+                           // gain access to the directory
+                           let gotAccess = file.startAccessingSecurityScopedResource()
+                           if !gotAccess { return }
+                           // access the directory URL
+                           // (read templates in the directory, make a bookmark, etc.)
+                           objects.append(Object(name: file.absoluteString))
+                           // release access
+                           file.stopAccessingSecurityScopedResource()
+                       }
+                   case .failure(let error):
+                       // handle error
+                       print(error)
+                   }
+               }
                 
                 Spacer()
                 
